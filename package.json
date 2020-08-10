@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/olegdemchenko/frontend-project-lvl3/issues"
   },
-  "homepage": "https://github.com/olegdemchenko/frontend-project-lvl3#readme"
+  "homepage": "https://github.com/olegdemchenko/frontend-project-lvl3#readme",
+  "devDependencies": {
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0"
+  }
 }
