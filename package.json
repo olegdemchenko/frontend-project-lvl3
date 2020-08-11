@@ -4,6 +4,7 @@
   "description": "my first frontend project",
   "main": "index.js",
   "scripts": {
+    "build": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src",
     "dev": "webpack-dev-server --open --mode development"
@@ -28,6 +29,7 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^0.10.0",
     "style-loader": "^1.2.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
