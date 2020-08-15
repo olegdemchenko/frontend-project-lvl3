@@ -31,7 +31,7 @@ export default () => {
     },
   };
 
-  const corsAPI = 'http://cors-anywhere.herokuapp.com';
+  const corsAPI = 'https://cors-anywhere.herokuapp.com';
   const watchedRegistration = onChange(state.registrationProcess, changeRegistrationState);
   const watchedState = onChange(state, changeStateRSS);
   const form = document.querySelector('.rss-form');
