@@ -25,7 +25,6 @@
     "babel-loader": "^8.1.0",
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^4.2.1",
-    "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "html-webpack-plugin": "^4.3.0",
@@ -36,8 +35,14 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
+    "core-js": "^3.6.5",
+    "eslint": "^7.7.0",
     "jquery": "^3.5.1",
-    "popper.js": "^1.16.1"
+    "lodash": "^4.17.20",
+    "on-change": "^2.0.2",
+    "popper.js": "^1.16.1",
+    "yup": "^0.29.3"
   }
 }
