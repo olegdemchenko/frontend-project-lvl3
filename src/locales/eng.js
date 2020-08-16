@@ -5,6 +5,6 @@ export default {
     foundSameError: 'rss has already been added',
     validationError: 'this url is not valid',
     registrationError: 'not response',
-    parsingError: 'rss channel has not found'
-  }
+    parsingError: 'rss channel has not found',
+  },
 };

@@ -1,6 +1,4 @@
-const toString = (message, openTag, closeTag) => {
-  return `${openTag}${message}${closeTag}`;
-};
+const toString = (message, openTag, closeTag) => `${openTag}${message}${closeTag}`;
 
 function changeRegistrationState(path, value) {
   const form = document.querySelector('.rss-form');
