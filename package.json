@@ -4,10 +4,7 @@
   "description": "my first frontend project",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode production",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src",
-    "dev": "webpack-dev-server --open --mode development"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -39,6 +36,7 @@
     "bootstrap": "^4.5.2",
     "core-js": "^3.6.5",
     "eslint": "^7.7.0",
+    "i18next": "^19.6.3",
     "jquery": "^3.5.1",
     "lodash": "^4.17.20",
     "on-change": "^2.0.2",

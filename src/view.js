@@ -1,12 +1,6 @@
-const toString = (messages, openTag, closeTag) => {
-  if (typeof messages === 'string') {
-    return `${openTag}${messages}${closeTag}`;
-  }
-  return messages.map((elem) => `${openTag}${elem}${closeTag}`).join('');
+const toString = (message, openTag, closeTag) => {
+  return `${openTag}${message}${closeTag}`;
 };
-
-const successMessage = 'Rss feed has been loaded';
-const waitingMessage = 'Please wait';
 
 function changeRegistrationState(path, value) {
   const form = document.querySelector('.rss-form');
@@ -22,20 +16,20 @@ function changeRegistrationState(path, value) {
       case 'sending': {
         form.url.setAttribute('disabled', '');
         form.button.setAttribute('disabled', '');
-        feedBack.innerHTML = toString(waitingMessage, '<p class="text-info">', '</p>');
+        feedBack.innerHTML = toString(this.message, '<p class="text-info">', '</p>');
         return;
       }
       case 'finished': {
         form.url.removeAttribute('disabled');
         form.url.value = '';
         form.button.removeAttribute('disabled');
-        feedBack.innerHTML = toString(successMessage, '<p class="text-success">', '</p>');
+        feedBack.innerHTML = toString(this.message, '<p class="text-success">', '</p>');
         return;
       }
       case 'failed': {
         form.url.removeAttribute('disabled');
         form.button.removeAttribute('disabled');
-        feedBack.innerHTML = toString(this.errors, '<p class="text-danger">', '</p>');
+        feedBack.innerHTML = toString(this.message, '<p class="text-danger">', '</p>');
         return;
       }
       default: {
@@ -46,7 +40,7 @@ function changeRegistrationState(path, value) {
   if (path === 'validationState') {
     if (value === 'invalid') {
       form.url.classList.add('is-invalid');
-      feedBack.innerHTML = toString(this.errors, '<p class="text-danger">', '</p>');
+      feedBack.innerHTML = toString(this.message, '<p class="text-danger">', '</p>');
     } else {
       form.url.classList.remove('is-invalid');
       feedBack.innerHTML = '';
