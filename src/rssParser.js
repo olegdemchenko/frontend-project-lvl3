@@ -1,14 +1,15 @@
-import { uniqueId } from 'lodash';
-
-const extractData = (domNode, id, type) => {
-  const title = domNode.querySelector(`${domNode.tagName} > title`).textContent;
-  const link = domNode.querySelector(`${domNode.tagName} > link`).textContent;
+const extractData = (domNode, type) => {
+  const titleElem = domNode.querySelector(`${domNode.tagName} > title`);
+  const title = titleElem.textContent;
+  const linkElem = domNode.querySelector(`${domNode.tagName} > link`);
+  const link = linkElem.textContent;
   if (type === 'post') {
-    return { title, link, id };
+    return { title, link };
   }
-  const description = domNode.querySelector(`${domNode.tagName} > description`).textContent;
+  const descriptionElem = domNode.querySelector(`${domNode.tagName} > description`);
+  const description = descriptionElem.textContent;
   return {
-    title, description, link, id,
+    title, description, link,
   };
 };
 
@@ -19,7 +20,6 @@ export default (data) => {
   if (channel === null) {
     return null;
   }
-  const id = uniqueId();
   const items = channel.querySelectorAll('item');
-  return { feed: extractData(channel, id, 'feed'), posts: [...items].map((item) => extractData(item, id, 'post')) };
+  return { feed: extractData(channel, 'feed'), posts: [...items].map((item) => extractData(item, 'post')) };
 };

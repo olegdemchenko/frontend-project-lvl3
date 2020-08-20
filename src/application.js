@@ -2,9 +2,10 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import axios from 'axios';
 import i18next from 'i18next';
+import { uniqueId, differenceWith, noop } from 'lodash';
 import resources from './locales';
-import { changeRegistrationState, changeStateRSS } from './view';
-import parseRSS from './rssParser';
+import { changeRegistrationState, changeStateData } from './view';
+import parse from './rssParser';
 
 export default i18next.init({
   lng: 'eng',
@@ -17,14 +18,14 @@ export default i18next.init({
     },
   });
 
-  yup.addMethod(yup.string, 'findSameFeed', function wrapper(arr, message) {
+  yup.addMethod(yup.string, 'findSameFeed', function wrapper(channels, message) {
     return this.test('test-name', message, function findSameFeed(value) {
       return new Promise((resolve, reject) => {
-        const gotDouble = arr.includes(value);
-        if (!gotDouble) {
-          resolve(true);
-        } else {
+        const channelsHasSameFeed = channels.some(({ url }) => url === value);
+        if (channelsHasSameFeed) {
           reject(this.createError({ message }));
+        } else {
+          resolve(true);
         }
       });
     });
@@ -37,27 +38,31 @@ export default i18next.init({
       message: '',
     },
     addedChannels: [],
-    rss: {
+    autoUpdateDelay: 5000,
+    data: {
       feeds: [],
       posts: [],
     },
   };
 
+  const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
+
   const corsAPI = 'https://cors-anywhere.herokuapp.com';
   const watchedRegistration = onChange(state.registrationProcess, changeRegistrationState);
-  const watchedState = onChange(state, changeStateRSS);
+  const watchedStateData = onChange(state.data, changeStateData);
   const form = document.querySelector('.rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(form);
     const rss = formData.get('url');
-    const schema = yup.string().url().findSameFeed(watchedState.addedChannels, i18next.t('foundSameError'));
+    const schema = yup.string().url().findSameFeed(state.addedChannels, i18next.t('foundSameError'));
     schema.validate(rss)
       .then((url) => {
         watchedRegistration.validationState = 'valid';
         watchedRegistration.message = i18next.t('waiting');
         watchedRegistration.state = 'sending';
-        axios.get(new URL(`../${url}`, corsAPI))
+        const corsUrl = new URL(`../${url}`, corsAPI);
+        axios.get(corsUrl.toString())
           .then(({ status, data }) => {
             if (status !== 200) {
               throw new Error(i18next.t('registrationError'));
@@ -65,18 +70,19 @@ export default i18next.init({
             return data;
           })
           .then((response) => {
-            const channelData = parseRSS(response);
+            const channelData = parse(response);
             if (channelData === null) {
               throw new Error(i18next.t('parsingError'));
             }
             watchedRegistration.message = i18next.t('success');
             watchedRegistration.state = 'finished';
-            watchedState.addedChannels.push(url);
             const { feed, posts } = channelData;
-            watchedState.rss = {
-              feeds: [feed, ...watchedState.rss.feeds],
-              posts: [...posts, ...watchedState.rss.posts],
-            };
+            const id = uniqueId();
+            state.addedChannels.push({ url, id });
+            const feedWithId = addId([feed], id);
+            const postsWithId = addId(posts, id);
+            watchedStateData.feeds = [...feedWithId, ...watchedStateData.feeds];
+            watchedStateData.posts = [...postsWithId, ...watchedStateData.posts];
           })
           .catch(({ message }) => {
             watchedRegistration.message = message;
@@ -88,4 +94,28 @@ export default i18next.init({
         watchedRegistration.validationState = 'invalid';
       });
   });
+
+  setTimeout(function autoUpdate() {
+    state.addedChannels.forEach(({ url, id }) => {
+      const corsUrl = new URL(`../${url}`, corsAPI);
+      axios.get(corsUrl.toString())
+        .then(({ status, data }) => {
+          if (status === 200) {
+            const { posts: newPosts } = parse(data);
+            const oldPosts = watchedStateData.posts.filter(({ id: postId }) => postId === id);
+            const diff = differenceWith(
+              newPosts,
+              oldPosts,
+              (newPost, oldPost) => newPost.title === oldPost.title,
+            );
+            const diffWithId = addId(diff, id);
+            watchedStateData.posts = [...diffWithId, ...watchedStateData.posts];
+          } else {
+            state.autoUpdateDelay *= 2;
+          }
+        })
+        .catch(noop);
+    });
+    setTimeout(autoUpdate, state.autoUpdateDelay);
+  }, state.autoUpdateDelay);
 });
