@@ -1,0 +1,350 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`response error 1`] = `
+"<main class=\\"flex-grow-1\\">
+    <section class=\\"jumbotron jumbotron-fluid bg-dark\\">
+        <div class=\\"container-xl\\">
+            <div class=\\"row\\">
+                <div class=\\"col-md-10 col-lg-8 mx-auto text-white\\">
+                    <h1 class=\\"display-3\\">RSS Reader</h1>
+                    <p class=\\"lead\\">
+                        Start reading RSS today! Is is easy, it is nicely.
+                    </p>
+                    <form action=\\"\\" class=\\"rss-form\\">
+                        <div class=\\"form-row\\">
+                            <div class=\\"col\\">
+                                <input
+                                    class=\\"form-control form-control-lg w-100\\"
+                                    type=\\"text\\"
+                                    autofocus=\\"autofocus\\"
+                                    required=\\"required\\"
+                                    name=\\"url\\"
+                                    aria-label=\\"url\\"
+                                    placeholder=\\"RSS link\\"
+                                />
+                            </div>
+                            <div class=\\"col-auto\\">
+                                <button
+                                    name=\\"button\\"
+                                    aria-label=\\"add\\"
+                                    class=\\"btn btn-lg btn-primary px-sm-5\\"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <p class=\\"text-muted my-1\\">
+                        Example: https://ru.hexlet.io/lessons.rss
+                    </p>
+                    <div class=\\"feedback\\">
+                        <p class=\\"text-danger\\">
+                            Request failed with status code 404
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class=\\"container-xl\\">
+        <div class=\\"row\\">
+            <div class=\\"col-md-10 col-lg-8 mx-auto feeds\\"></div>
+        </div>
+    </div>
+</main>
+<footer class=\\"footer border-top py-3 mt-5\\">
+    <div class=\\"container-xl\\">
+        <div class=\\"text-center\\">Created By Oleg Demchenko</div>
+    </div>
+</footer>
+"
+`;
+
+exports[`success 1`] = `
+"<main class=\\"flex-grow-1\\">
+    <section class=\\"jumbotron jumbotron-fluid bg-dark\\">
+        <div class=\\"container-xl\\">
+            <div class=\\"row\\">
+                <div class=\\"col-md-10 col-lg-8 mx-auto text-white\\">
+                    <h1 class=\\"display-3\\">RSS Reader</h1>
+                    <p class=\\"lead\\">
+                        Start reading RSS today! Is is easy, it is nicely.
+                    </p>
+                    <form action=\\"\\" class=\\"rss-form\\">
+                        <div class=\\"form-row\\">
+                            <div class=\\"col\\">
+                                <input
+                                    class=\\"form-control form-control-lg w-100\\"
+                                    type=\\"text\\"
+                                    autofocus=\\"autofocus\\"
+                                    required=\\"required\\"
+                                    name=\\"url\\"
+                                    aria-label=\\"url\\"
+                                    placeholder=\\"RSS link\\"
+                                />
+                            </div>
+                            <div class=\\"col-auto\\">
+                                <button
+                                    name=\\"button\\"
+                                    aria-label=\\"add\\"
+                                    class=\\"btn btn-lg btn-primary px-sm-5\\"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <p class=\\"text-muted my-1\\">
+                        Example: https://ru.hexlet.io/lessons.rss
+                    </p>
+                    <div class=\\"feedback\\">
+                        <p class=\\"text-success\\">rss has been loaded</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class=\\"container-xl\\">
+        <div class=\\"row\\">
+            <div class=\\"col-md-10 col-lg-8 mx-auto feeds\\">
+                <h2>
+                    Lorem ipsum feed for an interval of 1 minutes with 10
+                    item(s)
+                </h2>
+                <div>
+                    <a href=\\"http://example.com/test/1597855200\\">
+                        Lorem ipsum 2020-08-19T16:40:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597855140\\">
+                        Lorem ipsum 2020-08-19T16:39:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597855080\\">
+                        Lorem ipsum 2020-08-19T16:38:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597855020\\">
+                        Lorem ipsum 2020-08-19T16:37:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597854960\\">
+                        Lorem ipsum 2020-08-19T16:36:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597854900\\">
+                        Lorem ipsum 2020-08-19T16:35:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597854840\\">
+                        Lorem ipsum 2020-08-19T16:34:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597854780\\">
+                        Lorem ipsum 2020-08-19T16:33:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597854720\\">
+                        Lorem ipsum 2020-08-19T16:32:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597854660\\">
+                        Lorem ipsum 2020-08-19T16:31:00Z
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer class=\\"footer border-top py-3 mt-5\\">
+    <div class=\\"container-xl\\">
+        <div class=\\"text-center\\">Created By Oleg Demchenko</div>
+    </div>
+</footer>
+"
+`;
+
+exports[`update 1`] = `
+"<main class=\\"flex-grow-1\\">
+    <section class=\\"jumbotron jumbotron-fluid bg-dark\\">
+        <div class=\\"container-xl\\">
+            <div class=\\"row\\">
+                <div class=\\"col-md-10 col-lg-8 mx-auto text-white\\">
+                    <h1 class=\\"display-3\\">RSS Reader</h1>
+                    <p class=\\"lead\\">
+                        Start reading RSS today! Is is easy, it is nicely.
+                    </p>
+                    <form action=\\"\\" class=\\"rss-form\\">
+                        <div class=\\"form-row\\">
+                            <div class=\\"col\\">
+                                <input
+                                    class=\\"form-control form-control-lg w-100\\"
+                                    type=\\"text\\"
+                                    autofocus=\\"autofocus\\"
+                                    required=\\"required\\"
+                                    name=\\"url\\"
+                                    aria-label=\\"url\\"
+                                    placeholder=\\"RSS link\\"
+                                />
+                            </div>
+                            <div class=\\"col-auto\\">
+                                <button
+                                    name=\\"button\\"
+                                    aria-label=\\"add\\"
+                                    class=\\"btn btn-lg btn-primary px-sm-5\\"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <p class=\\"text-muted my-1\\">
+                        Example: https://ru.hexlet.io/lessons.rss
+                    </p>
+                    <div class=\\"feedback\\">
+                        <p class=\\"text-success\\">rss has been loaded</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class=\\"container-xl\\">
+        <div class=\\"row\\">
+            <div class=\\"col-md-10 col-lg-8 mx-auto feeds\\">
+                <h2>
+                    Lorem ipsum feed for an interval of 1 minutes with 10
+                    item(s)
+                </h2>
+                <div>
+                    <a href=\\"http://example.com/test/1597926540\\">
+                        Lorem ipsum 2020-08-20T12:29:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926480\\">
+                        Lorem ipsum 2020-08-20T12:28:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926420\\">
+                        Lorem ipsum 2020-08-20T12:27:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926360\\">
+                        Lorem ipsum 2020-08-20T12:26:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926300\\">
+                        Lorem ipsum 2020-08-20T12:25:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926240\\">
+                        Lorem ipsum 2020-08-20T12:24:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926180\\">
+                        Lorem ipsum 2020-08-20T12:23:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926120\\">
+                        Lorem ipsum 2020-08-20T12:22:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926060\\">
+                        Lorem ipsum 2020-08-20T12:21:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597926000\\">
+                        Lorem ipsum 2020-08-20T12:20:00Z
+                    </a>
+                </div>
+                <div>
+                    <a href=\\"http://example.com/test/1597925940\\">
+                        Lorem ipsum 2020-08-20T12:19:00Z
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer class=\\"footer border-top py-3 mt-5\\">
+    <div class=\\"container-xl\\">
+        <div class=\\"text-center\\">Created By Oleg Demchenko</div>
+    </div>
+</footer>
+"
+`;
+
+exports[`validation error 1`] = `
+"<main class=\\"flex-grow-1\\">
+    <section class=\\"jumbotron jumbotron-fluid bg-dark\\">
+        <div class=\\"container-xl\\">
+            <div class=\\"row\\">
+                <div class=\\"col-md-10 col-lg-8 mx-auto text-white\\">
+                    <h1 class=\\"display-3\\">RSS Reader</h1>
+                    <p class=\\"lead\\">
+                        Start reading RSS today! Is is easy, it is nicely.
+                    </p>
+                    <form action=\\"\\" class=\\"rss-form\\">
+                        <div class=\\"form-row\\">
+                            <div class=\\"col\\">
+                                <input
+                                    class=\\"form-control form-control-lg w-100 is-invalid\\"
+                                    type=\\"text\\"
+                                    autofocus=\\"autofocus\\"
+                                    required=\\"required\\"
+                                    name=\\"url\\"
+                                    aria-label=\\"url\\"
+                                    placeholder=\\"RSS link\\"
+                                />
+                            </div>
+                            <div class=\\"col-auto\\">
+                                <button
+                                    name=\\"button\\"
+                                    aria-label=\\"add\\"
+                                    class=\\"btn btn-lg btn-primary px-sm-5\\"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <p class=\\"text-muted my-1\\">
+                        Example: https://ru.hexlet.io/lessons.rss
+                    </p>
+                    <div class=\\"feedback\\">
+                        <p class=\\"text-danger\\">this url is not valid</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class=\\"container-xl\\">
+        <div class=\\"row\\">
+            <div class=\\"col-md-10 col-lg-8 mx-auto feeds\\"></div>
+        </div>
+    </div>
+</main>
+<footer class=\\"footer border-top py-3 mt-5\\">
+    <div class=\\"container-xl\\">
+        <div class=\\"text-center\\">Created By Oleg Demchenko</div>
+    </div>
+</footer>
+"
+`;
