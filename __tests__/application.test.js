@@ -7,7 +7,8 @@ import userEvent from '@testing-library/user-event';
 import nock from 'nock';
 import axios from 'axios';
 import timer from 'timer-promise';
-import run from '../src/application';
+import run from '../src/app/application';
+import getUrlWithCORSFree from '../src/common';
 
 axios.defaults.adapter = require('axios/lib/adapters/http');
 
@@ -22,11 +23,6 @@ const options = {
 const getFormattedHTML = () => prettier.format(document.body.innerHTML, options);
 const pathToFixture = (fixtureName) => path.join('__tests__', '__fixtures__', fixtureName);
 const readFile = (filename) => fs.readFileSync(pathToFixture(filename)).toString();
-const getURL = (link) => {
-  const corsAPI = 'https://cors-anywhere.herokuapp.com';
-  const url = new URL(`../${link}`, corsAPI);
-  return url.toString();
-};
 
 const links = {
   notValid: 'hello world',
@@ -53,7 +49,7 @@ test('validation error', () => (
 ));
 
 test('response error', () => {
-  const scope = nock(getURL(links.notExisted)).get('/rss').reply(404);
+  const scope = nock(getUrlWithCORSFree(links.notExisted)).get('/rss').reply(404);
   return userEvent.type(elements.emailInput, `${links.notExisted}/rss`)
     .then(() => userEvent.click(elements.submit))
     .then(() => timer.start('start', 200))
@@ -65,7 +61,7 @@ test('response error', () => {
 
 test('success', () => {
   const response = readFile('lorem.html');
-  const scope = nock(getURL(links.rss)).get('/feed').reply(200, response);
+  const scope = nock(getUrlWithCORSFree(links.rss)).get('/feed').reply(200, response);
   return userEvent.type(elements.emailInput, `${links.rss}/feed`)
     .then(() => userEvent.click(elements.submit))
     .then(() => timer.start('start', 200))
@@ -78,7 +74,7 @@ test('success', () => {
 test('update', () => {
   const responseBeforeUpdate = readFile('loremBeforeUpdate.html');
   const responseAfterUpdate = readFile('loremAfterUpdate.html');
-  const scope = nock(getURL(links.rss))
+  const scope = nock(getUrlWithCORSFree(links.rss))
     .get('/feed?unit=second')
     .reply(200, responseBeforeUpdate)
     .get('/feed?unit=second')

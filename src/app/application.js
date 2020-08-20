@@ -6,6 +6,7 @@ import { uniqueId, differenceWith, noop } from 'lodash';
 import resources from './locales';
 import { changeRegistrationState, changeStateData } from './view';
 import parse from './rssParser';
+import getUrlWithCORSFree from '../common';
 
 export default i18next.init({
   lng: 'eng',
@@ -46,10 +47,11 @@ export default i18next.init({
   };
 
   const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
+  const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
 
-  const corsAPI = 'https://cors-anywhere.herokuapp.com';
   const watchedRegistration = onChange(state.registrationProcess, changeRegistrationState);
   const watchedStateData = onChange(state.data, changeStateData);
+
   const form = document.querySelector('.rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -61,8 +63,7 @@ export default i18next.init({
         watchedRegistration.validationState = 'valid';
         watchedRegistration.message = i18next.t('waiting');
         watchedRegistration.state = 'sending';
-        const corsUrl = new URL(`../${url}`, corsAPI);
-        axios.get(corsUrl.toString())
+        makeRequest(url)
           .then(({ status, data }) => {
             if (status !== 200) {
               throw new Error(i18next.t('registrationError'));
@@ -97,8 +98,7 @@ export default i18next.init({
 
   setTimeout(function autoUpdate() {
     state.addedChannels.forEach(({ url, id }) => {
-      const corsUrl = new URL(`../${url}`, corsAPI);
-      axios.get(corsUrl.toString())
+      makeRequest(url)
         .then(({ status, data }) => {
           if (status === 200) {
             const { posts: newPosts } = parse(data);
