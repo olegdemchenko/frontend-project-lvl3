@@ -27,12 +27,11 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+    }),
     new MiniCssExtractPlugin({
       filename: 'main.css',
-    }),
-    new HtmlWebpackPlugin({
-      title: 'RSS Reader',
-      template: './src/index.html',
     }),
   ],
 };

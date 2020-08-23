@@ -38,7 +38,7 @@ beforeEach(() => {
     submit: screen.getByRole('button'),
     emailInput: screen.getByRole('textbox', { name: /url/ }),
   };
-  return run.then((app) => app());
+  run();
 });
 
 test('validation error', () => (

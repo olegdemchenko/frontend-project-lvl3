@@ -21,5 +21,5 @@ export default (data) => {
     return null;
   }
   const items = channel.querySelectorAll('item');
-  return { feed: extractData(channel, 'feed'), posts: [...items].map((item) => extractData(item, 'post')) };
+  return { channel: extractData(channel, 'feed'), items: [...items].map((item) => extractData(item, 'post')) };
 };

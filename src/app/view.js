@@ -1,73 +1,121 @@
-const elemToString = (text, openTag, closeTag) => `${openTag}${text}${closeTag}`;
+import { memoize } from 'lodash';
 
-function changeRegistrationState(path, value) {
-  const form = document.querySelector('.rss-form');
-  const urlInput = form.querySelector('input[name="url"]');
-  const button = form.querySelector('button');
+const getDOMElems = () => {
   const feedBack = document.querySelector('.feedback');
-  if (path === 'state') {
+  const urlInput = document.querySelector('input[name="url"]');
+  const button = document.querySelector('button');
+  return { feedBack, urlInput, button };
+};
+
+const getMemoizedDOMElems = memoize(getDOMElems);
+
+const renderMessage = (value) => {
+  const { feedBack } = getMemoizedDOMElems();
+  feedBack.textContent = value;
+};
+
+const renderRegistration = (path, value) => {
+  const { feedBack, urlInput, button } = getMemoizedDOMElems();
+  if (path.endsWith('processState')) {
     switch (value) {
       case 'filling': {
         urlInput.removeAttribute('disabled');
         urlInput.value = '';
         button.removeAttribute('disabled');
-        return;
+        break;
       }
       case 'sending': {
         urlInput.setAttribute('disabled', '');
         button.setAttribute('disabled', '');
-        feedBack.innerHTML = elemToString(this.message, '<p class="text-info">', '</p>');
-        return;
+        feedBack.className = 'feedback text-info';
+        break;
       }
       case 'finished': {
         urlInput.removeAttribute('disabled');
         urlInput.value = '';
         button.removeAttribute('disabled');
-        feedBack.innerHTML = elemToString(this.message, '<p class="text-success">', '</p>');
-        return;
+        feedBack.className = 'feedback text-success';
+        break;
       }
       case 'failed': {
         urlInput.removeAttribute('disabled');
         button.removeAttribute('disabled');
-        feedBack.innerHTML = elemToString(this.message, '<p class="text-danger">', '</p>');
-        return;
+        feedBack.className = 'feedback text-danger';
+        break;
       }
       default: {
-        throw new Error('state is not supported');
+        break;
       }
     }
   }
-  if (path === 'validationState') {
-    if (value === 'invalid') {
-      urlInput.classList.add('is-invalid');
-      feedBack.innerHTML = elemToString(this.message, '<p class="text-danger">', '</p>');
-    } else {
-      urlInput.classList.remove('is-invalid');
-      feedBack.innerHTML = '';
-    }
+  if (path.endsWith('processError') || path.endsWith('message')) {
+    renderMessage(value);
   }
-}
+};
 
-function changeStateData() {
+const renderValidation = (path, value) => {
+  const { urlInput, feedBack } = getMemoizedDOMElems();
+  if (path.endsWith('valid')) {
+    if (value === true) {
+      urlInput.classList.remove('is-invalid');
+      feedBack.className = 'feedback';
+      return;
+    }
+    urlInput.classList.add('is-invalid');
+    feedBack.className = 'feedback text-danger';
+  }
+  if (path.endsWith('error')) {
+    renderMessage(value);
+  }
+};
+
+const createElement = (elem, content) => {
+  const element = document.createElement(elem);
+  element.append(...content);
+  return element;
+};
+
+const renderData = (value) => {
   const container = document.querySelector('.feeds');
   container.innerHTML = '';
-  const { feeds, posts } = this;
-  feeds.forEach(({ title, id }) => {
-    const fragment = document.createDocumentFragment();
-    const header = document.createElement('h2');
-    header.textContent = title;
-    fragment.append(header);
-    const feedPosts = posts.filter((post) => post.id === id);
-    feedPosts.forEach(({ title: postTitle, link }) => {
-      const post = document.createElement('div');
-      const a = document.createElement('a');
-      a.href = link;
-      a.textContent = postTitle;
-      post.append(a);
-      fragment.append(post);
-    });
-    container.append(fragment);
+  const { feeds, posts } = value;
+  const feedsItems = feeds.map(({ title, link }) => {
+    const feedItemContent = createElement('a', [title]);
+    feedItemContent.href = link;
+    return createElement('h3', [feedItemContent]);
   });
-}
+  const feedsTitle = createElement('h2', 'Feeds list');
+  const feedsList = createElement('ul', [feedsTitle, ...feedsItems]);
+  container.prepend(feedsList);
+  feeds.forEach(({ title, id }) => {
+    const feedPosts = posts.filter((post) => post.id === id);
+    const feedTitle = createElement('h2', [title]);
+    const mappedPosts = feedPosts.map(({ title: postTitle, link }) => {
+      const postLink = createElement('a', [postTitle]);
+      postLink.href = link;
+      const postItem = createElement('li', [postLink]);
+      return postItem;
+    });
+    const feedList = createElement('ul', [feedTitle, ...mappedPosts]);
+    container.append(feedList);
+  });
+};
 
-export { changeRegistrationState, changeStateData };
+export default (path, value) => {
+  switch (true) {
+    case path.startsWith('form'): {
+      renderRegistration(path, value);
+      break;
+    }
+    case path.startsWith('validation'): {
+      renderValidation(path, value);
+      break;
+    }
+    case path.startsWith('data'): {
+      renderData(value);
+      break;
+    }
+    default:
+      break;
+  }
+};
