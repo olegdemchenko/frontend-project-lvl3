@@ -16,8 +16,8 @@ const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
 
 const validate = (newUrl, addedUrls) => {
   try {
-    yup.string().url(i18next.t('validationError')).validateSync(newUrl);
-    yup.mixed().notOneOf(addedUrls, i18next.t('foundSameError')).validateSync(newUrl);
+    yup.string().url(i18next.t('errors.validation')).validateSync(newUrl);
+    yup.mixed().notOneOf(addedUrls, i18next.t('errors.foundSame')).validateSync(newUrl);
     return null;
   } catch ({ errors: [error] }) {
     return error;
@@ -91,13 +91,13 @@ export default () => {
         .then(({ status, data }) => {
           if (status !== 200) {
             watchedState.form.processState = 'failed';
-            watchedState.form.processError = i18next.t('registrationError');
+            watchedState.form.processError = i18next.t('errors.registration');
             return;
           }
           const channelData = parse(data);
           if (channelData === null) {
             watchedState.form.processState = 'failed';
-            watchedState.form.processError = i18next.t('parsingError');
+            watchedState.form.processError = i18next.t('errors.parsing');
             return;
           }
           watchedState.form.processState = 'finished';

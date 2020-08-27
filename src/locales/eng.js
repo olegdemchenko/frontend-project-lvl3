@@ -2,9 +2,11 @@ export default {
   translation: {
     success: 'rss has been loaded',
     waiting: 'please, wait',
-    foundSameError: 'rss has already been added',
-    validationError: 'this url is not valid',
-    registrationError: 'not response',
-    parsingError: 'rss channel has not found',
+    errors: {
+      foundSame: 'rss has already been added',
+      validation: 'this url is not valid',
+      registration: 'not response',
+      parsing: 'rss channel has not found',
+    },
   },
 };
