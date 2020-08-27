@@ -1,12 +1,28 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
 import axios from 'axios';
 import i18next from 'i18next';
-import { uniqueId, differenceWith } from 'lodash';
+import {
+  uniqueId,
+  differenceWith,
+  mapValues,
+  transform,
+} from 'lodash';
 import resources from './locales';
-import watcher from './view';
+import initView from './view';
 import parse from './rssParser';
-import getUrlWithCORSFree from '../common';
+import getUrlWithCORSFree from './common';
+
+const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
+
+const validate = (newUrl, addedUrls) => {
+  try {
+    yup.string().url(i18next.t('validationError')).validateSync(newUrl);
+    yup.mixed().notOneOf(addedUrls, i18next.t('foundSameError')).validateSync(newUrl);
+    return null;
+  } catch ({ errors: [error] }) {
+    return error;
+  }
+};
 
 export default () => {
   i18next.init({
@@ -14,24 +30,13 @@ export default () => {
     debug: true,
     resources,
   }).then(() => {
-    yup.setLocale({
-      mixed: {
-        notOneOf: i18next.t('foundSameError'),
-      },
-      string: {
-        url: i18next.t('validationError'),
-      },
-    });
-
     const state = {
       form: {
         processState: 'filling',
         message: '',
         processError: '',
-      },
-      validation: {
         valid: true,
-        error: '',
+        validationError: '',
       },
       data: {
         feeds: [],
@@ -39,49 +44,44 @@ export default () => {
       },
     };
 
-    const watchedState = onChange(state, watcher);
-
     let autoUpdateDelay = 5000;
-    const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
 
-    const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
-
-    const validate = (link) => {
-      const schema = yup.string().url();
-      return schema.validate(link)
-        .then((validUrl) => {
-          const addedUrls = watchedState.data.feeds.map(({ url }) => url);
-          return yup.mixed().notOneOf(addedUrls).validate(validUrl);
-        })
-        .catch(({ errors: [error] }) => {
-          throw new Error(error);
-        });
+    const elements = {
+      form: document.querySelector('.rss-form'),
+      feedback: document.querySelector('.feedback'),
+      input: document.querySelector('input[name="url"]'),
+      button: document.querySelector('button[name="button"]'),
+      container: document.querySelector('.feeds'),
     };
 
-    const changeValidationState = (url) => (
-      validate(url)
-        .then(() => {
-          watchedState.validation.valid = true;
-          watchedState.validation.error = '';
-          return true;
-        })
-        .catch((err) => {
-          watchedState.validation.valid = false;
-          watchedState.validation.error = err.message;
-          return false;
-        })
-    );
+    const watchedState = initView(elements, state);
 
-    const changeStateData = (data, url) => {
-      const { channel: feed, items: posts } = data;
-      const id = uniqueId();
-      feed.url = url;
-      const feedWithId = addId([feed], id);
-      const postsWithId = addId(posts, id);
-      watchedState.data = {
-        feeds: [...feedWithId, ...watchedState.data.feeds],
-        posts: [...postsWithId, ...watchedState.data.posts],
-      };
+    const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
+
+    const isUrlValid = (link) => {
+      const addedUrls = watchedState.data.feeds.map(({ url }) => url);
+      const error = validate(link, addedUrls);
+      if (error) {
+        watchedState.form.valid = false;
+        watchedState.form.validationError = error;
+        return false;
+      }
+      watchedState.form.valid = true;
+      watchedState.form.validationError = '';
+      return true;
+    };
+
+    const changeStateData = (newData, id) => {
+      const newDataWithId = mapValues(newData, (value) => addId(value, id));
+      const newStateData = transform(watchedState.data, (acc, value, key) => {
+        if (newDataWithId[key]) {
+          acc[key] = [...newDataWithId[key], ...value];
+        } else {
+          acc[key] = [...value];
+        }
+        return acc;
+      }, {});
+      watchedState.data = newStateData;
     };
 
     const getRSSData = (url) => {
@@ -103,7 +103,10 @@ export default () => {
           watchedState.form.processState = 'finished';
           watchedState.form.message = i18next.t('success');
           watchedState.form.processError = '';
-          changeStateData(channelData, url);
+          const { channel: feed, items: posts } = channelData;
+          feed.url = url;
+          const id = uniqueId();
+          changeStateData({ feeds: [feed], posts }, id);
         })
         .catch(({ message }) => {
           watchedState.form.processState = 'failed';
@@ -115,13 +118,11 @@ export default () => {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      const rss = formData.get('url');
-      changeValidationState(rss)
-        .then((valid) => {
-          if (valid === true) {
-            getRSSData(rss);
-          }
-        });
+      const url = formData.get('url');
+      const isValid = isUrlValid(url);
+      if (isValid) {
+        getRSSData(url);
+      }
     });
 
     setTimeout(function autoUpdate() {
@@ -129,6 +130,7 @@ export default () => {
         makeRequest(url)
           .then(({ status, data }) => {
             if (status === 200) {
+              autoUpdateDelay = 5000;
               const { items: newPosts } = parse(data);
               const oldPosts = watchedState.data.posts.filter(({ id: postId }) => postId === id);
               const diff = differenceWith(
@@ -136,11 +138,7 @@ export default () => {
                 oldPosts,
                 (newPost, oldPost) => newPost.title === oldPost.title,
               );
-              const diffWithId = addId(diff, id);
-              watchedState.data = {
-                feeds: [...watchedState.data.feeds],
-                posts: [...diffWithId, ...watchedState.data.posts],
-              };
+              changeStateData({ posts: diff }, id);
             } else {
               autoUpdateDelay *= 2;
             }

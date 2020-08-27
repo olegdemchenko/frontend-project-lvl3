@@ -7,4 +7,5 @@ build:
 	npx webpack --mode production
 lint:
 	npx eslint .
-
+test:
+	npx jest

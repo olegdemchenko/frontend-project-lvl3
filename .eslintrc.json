@@ -13,6 +13,7 @@
         "sourceType": "module"
     },
     "rules": {
+        "no-param-reassign":"off"
     },
     "plugins": ["jest"]
 }

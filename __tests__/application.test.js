@@ -7,12 +7,10 @@ import userEvent from '@testing-library/user-event';
 import nock from 'nock';
 import axios from 'axios';
 import timer from 'timer-promise';
-import run from '../src/app/application';
+import run from '../src/application';
 import getUrlWithCORSFree from '../src/common';
 
 axios.defaults.adapter = require('axios/lib/adapters/http');
-
-nock.disableNetConnect();
 
 const options = {
   parser: 'html',
@@ -31,6 +29,11 @@ const links = {
 };
 
 let elements;
+
+beforeAll(() => {
+  nock.disableNetConnect();
+});
+
 beforeEach(() => {
   const initHtml = readFile('index.html');
   document.body.innerHTML = initHtml;
