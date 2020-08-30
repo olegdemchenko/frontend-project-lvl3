@@ -36,6 +36,11 @@ const messages = {
 
 let elements;
 
+const enterUrl = (link) => {
+  userEvent.type(elements.emailInput, link);
+  userEvent.click(elements.submit);
+};
+
 beforeAll(() => {
   nock.disableNetConnect();
 });
@@ -51,8 +56,7 @@ beforeEach(() => {
 });
 
 test('validation error', () => {
-  userEvent.type(elements.emailInput, links.notValid);
-  userEvent.click(elements.submit);
+  enterUrl(links.notValid);
   return waitFor(() => {
     expect(screen.getByTestId('feedback')).toHaveTextContent(messages.validationError);
   });
@@ -60,8 +64,7 @@ test('validation error', () => {
 
 test('response error', () => {
   const scope = nock(getUrlWithCORSFree(links.notExisted)).get('/rss').reply(404);
-  userEvent.type(elements.emailInput, `${links.notExisted}/rss`);
-  userEvent.click(elements.submit);
+  enterUrl(`${links.notExisted}/rss`);
   return waitFor(() => {
     expect(screen.getByTestId('feedback')).toHaveTextContent(messages.responseError);
     scope.done();
@@ -70,20 +73,20 @@ test('response error', () => {
 
 test('wait', () => {
   const scope = nock(getUrlWithCORSFree(links.rss)).get('/feed').delayConnection(2000).reply(200);
-  userEvent.type(elements.emailInput, `${links.rss}/feed`);
-  userEvent.click(elements.submit);
+  enterUrl(`${links.rss}/feed`);
   return waitFor(() => {
     expect(screen.getByTestId('feedback')).toHaveTextContent(messages.wait);
-    scope.done();
+    if (scope) {
+      scope.done();
+    }
   });
 });
 
 test('success', () => {
   const response = readFile('lorem.html');
   const scope = nock(getUrlWithCORSFree(links.rss)).get('/feed').reply(200, response);
-  return userEvent.type(elements.emailInput, `${links.rss}/feed`)
-    .then(() => userEvent.click(elements.submit))
-    .then(() => timer.start('start', 200))
+  enterUrl(`${links.rss}/feed`);
+  return timer.start('start', 200)
     .then(() => {
       expect(getFormattedHTML()).toMatchSnapshot();
       scope.done();
@@ -98,11 +101,10 @@ test('update', () => {
     .reply(200, responseBeforeUpdate)
     .get('/feed?unit=second')
     .reply(200, responseAfterUpdate);
-  return userEvent.type(elements.emailInput, `${links.rss}/feed?unit=second`)
-    .then(() => userEvent.click(elements.submit))
-    .then(() => timer.start('start', 5500))
+  enterUrl(`${links.rss}/feed?unit=second`);
+  return timer.start('start', 5500)
     .then(() => {
       expect(getFormattedHTML()).toMatchSnapshot();
       scope.done();
     });
-});
+}, 7000);
