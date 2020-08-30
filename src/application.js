@@ -102,7 +102,6 @@ export default () => {
           }
           watchedState.form.processState = 'finished';
           watchedState.form.message = i18next.t('success');
-          watchedState.form.processError = '';
           const { channel: feed, items: posts } = channelData;
           feed.url = url;
           const id = uniqueId();
@@ -114,10 +113,17 @@ export default () => {
         });
     };
 
-    const form = document.querySelector('.rss-form');
-    form.addEventListener('submit', (e) => {
+    elements.input.addEventListener('input', () => {
+      watchedState.form.processState = 'filling';
+      watchedState.form.message = '';
+      watchedState.form.valid = true;
+      watchedState.form.validationError = '';
+      watchedState.form.processError = '';
+    });
+
+    elements.form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const formData = new FormData(form);
+      const formData = new FormData(elements.form);
       const url = formData.get('url');
       const isValid = isUrlValid(url);
       if (isValid) {

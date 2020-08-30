@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { screen } from '@testing-library/dom';
+import { screen, waitFor } from '@testing-library/dom';
 import fs from 'fs';
 import path from 'path';
 import prettier from 'prettier';
@@ -28,6 +28,12 @@ const links = {
   rss: 'http://lorem-rss.herokuapp.com',
 };
 
+const messages = {
+  wait: 'please, wait',
+  responseError: 'Request failed with status code 404',
+  validationError: 'this url is not valid',
+};
+
 let elements;
 
 beforeAll(() => {
@@ -44,22 +50,32 @@ beforeEach(() => {
   run();
 });
 
-test('validation error', () => (
-  userEvent.type(elements.emailInput, links.notValid)
-    .then(() => userEvent.click(elements.submit))
-    .then(() => timer.start('start', 15))
-    .then(() => expect(getFormattedHTML()).toMatchSnapshot())
-));
+test('validation error', () => {
+  userEvent.type(elements.emailInput, links.notValid);
+  userEvent.click(elements.submit);
+  return waitFor(() => {
+    expect(screen.getByTestId('feedback')).toHaveTextContent(messages.validationError);
+  });
+});
 
 test('response error', () => {
   const scope = nock(getUrlWithCORSFree(links.notExisted)).get('/rss').reply(404);
-  return userEvent.type(elements.emailInput, `${links.notExisted}/rss`)
-    .then(() => userEvent.click(elements.submit))
-    .then(() => timer.start('start', 200))
-    .then(() => {
-      expect(getFormattedHTML()).toMatchSnapshot();
-      scope.done();
-    });
+  userEvent.type(elements.emailInput, `${links.notExisted}/rss`);
+  userEvent.click(elements.submit);
+  return waitFor(() => {
+    expect(screen.getByTestId('feedback')).toHaveTextContent(messages.responseError);
+    scope.done();
+  });
+});
+
+test('wait', () => {
+  const scope = nock(getUrlWithCORSFree(links.rss)).get('/feed').delayConnection(2000).reply(200);
+  userEvent.type(elements.emailInput, `${links.rss}/feed`);
+  userEvent.click(elements.submit);
+  return waitFor(() => {
+    expect(screen.getByTestId('feedback')).toHaveTextContent(messages.wait);
+    scope.done();
+  });
 });
 
 test('success', () => {
