@@ -13,19 +13,13 @@ import parse from './rssParser';
 import getUrlWithCORSFree from './common';
 
 const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
-
-const validate = (newUrl, addedUrls) => {
+const validate = ([schema, ...restSchemas], value) => {
   try {
-    yup.string().url(i18next.t('errors.validation')).validateSync(newUrl);
+    schema.validateSync(value);
   } catch ({ errors: [error] }) {
     return error;
   }
-  try {
-    yup.mixed().notOneOf(addedUrls, i18next.t('errors.foundSame')).validateSync(newUrl);
-    return null;
-  } catch ({ errors: [error] }) {
-    return error;
-  }
+  return restSchemas.length === 0 ? null : validate(restSchemas, value);
 };
 
 export default () => {
@@ -63,6 +57,7 @@ export default () => {
     const watchedState = initView(elements, state);
 
     const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
+    const getAddedUrls = () => watchedState.data.feeds.map(({ url }) => url);
 
     const changeStateData = (newData, id) => {
       const newDataWithId = mapValues(newData, (value) => addId(value, id));
@@ -87,10 +82,13 @@ export default () => {
 
     elements.form.addEventListener('submit', (e) => {
       e.preventDefault();
+      const validationSchemas = [
+        yup.string().url(i18next.t('errors.validation')),
+        yup.mixed().notOneOf(getAddedUrls(), i18next.t('errors.foundSame')),
+      ];
       const formData = new FormData(elements.form);
       const newUrl = formData.get('url');
-      const addedUrls = watchedState.data.feeds.map(({ url }) => url);
-      const validationError = validate(newUrl, addedUrls);
+      const validationError = validate(validationSchemas, newUrl);
       if (validationError) {
         watchedState.form.valid = false;
         watchedState.form.additionalInfo.validationError = validationError;

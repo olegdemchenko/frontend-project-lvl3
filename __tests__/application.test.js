@@ -30,7 +30,7 @@ const links = {
 
 const messages = {
   wait: 'please, wait',
-  responseError: 'Not Found',
+  responseError: '',
   validationError: 'this url is not valid',
 };
 
@@ -67,7 +67,7 @@ test('response error', () => {
     .reply(404);
   enterUrl(`${links.notExisted}/rss`);
   return waitFor(() => {
-    expect(screen.getByTestId('feedback')).toHaveTextContent('');
+    expect(screen.getByTestId('feedback')).toHaveTextContent(messages.responseError);
     scope.done();
   });
 });
