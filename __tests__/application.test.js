@@ -30,7 +30,7 @@ const links = {
 
 const messages = {
   wait: 'please, wait',
-  responseError: 'Request failed with status code 404',
+  responseError: 'Not Found',
   validationError: 'this url is not valid',
 };
 
@@ -63,10 +63,11 @@ test('validation error', () => {
 });
 
 test('response error', () => {
-  const scope = nock(getUrlWithCORSFree(links.notExisted)).get('/rss').reply(404);
+  const scope = nock(getUrlWithCORSFree(links.notExisted)).get('/rss')
+    .reply(404);
   enterUrl(`${links.notExisted}/rss`);
   return waitFor(() => {
-    expect(screen.getByTestId('feedback')).toHaveTextContent(messages.responseError);
+    expect(screen.getByTestId('feedback')).toHaveTextContent('');
     scope.done();
   });
 });

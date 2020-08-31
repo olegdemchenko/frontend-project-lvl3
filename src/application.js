@@ -101,12 +101,7 @@ export default () => {
       watchedState.form.processState = 'sending';
       watchedState.form.additionalInfo.message = i18next.t('waiting');
       makeRequest(newUrl)
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            watchedState.form.processState = 'failed';
-            watchedState.form.additionalInfo.processError = i18next.t('errors.registration');
-            return;
-          }
+        .then(({ data }) => {
           const channelData = parse(data);
           if (channelData === null) {
             watchedState.form.processState = 'failed';
@@ -120,9 +115,9 @@ export default () => {
           const id = uniqueId();
           changeStateData({ feeds: [feed], posts }, id);
         })
-        .catch(({ message }) => {
+        .catch(({ response: { statusText } }) => {
           watchedState.form.processState = 'failed';
-          watchedState.form.additionalInfo.processError = message;
+          watchedState.form.additionalInfo.processError = statusText;
         });
     });
 
