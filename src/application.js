@@ -17,6 +17,10 @@ const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
 const validate = (newUrl, addedUrls) => {
   try {
     yup.string().url(i18next.t('errors.validation')).validateSync(newUrl);
+  } catch ({ errors: [error] }) {
+    return error;
+  }
+  try {
     yup.mixed().notOneOf(addedUrls, i18next.t('errors.foundSame')).validateSync(newUrl);
     return null;
   } catch ({ errors: [error] }) {
@@ -33,10 +37,12 @@ export default () => {
     const state = {
       form: {
         processState: 'filling',
-        message: '',
-        processError: '',
         valid: true,
-        validationError: '',
+        additionalInfo: {
+          message: '',
+          processError: '',
+          validationError: '',
+        },
       },
       data: {
         feeds: [],
@@ -58,19 +64,6 @@ export default () => {
 
     const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
 
-    const isUrlValid = (link) => {
-      const addedUrls = watchedState.data.feeds.map(({ url }) => url);
-      const error = validate(link, addedUrls);
-      if (error) {
-        watchedState.form.valid = false;
-        watchedState.form.validationError = error;
-        return false;
-      }
-      watchedState.form.valid = true;
-      watchedState.form.validationError = '';
-      return true;
-    };
-
     const changeStateData = (newData, id) => {
       const newDataWithId = mapValues(newData, (value) => addId(value, id));
       const newStateData = transform(watchedState.data, (acc, value, key) => {
@@ -84,74 +77,78 @@ export default () => {
       watchedState.data = newStateData;
     };
 
-    const getRSSData = (url) => {
-      watchedState.form.processState = 'sending';
-      watchedState.form.message = i18next.t('waiting');
-      makeRequest(url)
-        .then(({ status, data }) => {
-          if (status !== 200) {
-            watchedState.form.processState = 'failed';
-            watchedState.form.processError = i18next.t('errors.registration');
-            return;
-          }
-          const channelData = parse(data);
-          if (channelData === null) {
-            watchedState.form.processState = 'failed';
-            watchedState.form.processError = i18next.t('errors.parsing');
-            return;
-          }
-          watchedState.form.processState = 'finished';
-          watchedState.form.message = i18next.t('success');
-          const { channel: feed, items: posts } = channelData;
-          feed.url = url;
-          const id = uniqueId();
-          changeStateData({ feeds: [feed], posts }, id);
-        })
-        .catch(({ message }) => {
-          watchedState.form.processState = 'failed';
-          watchedState.form.processError = message;
-        });
-    };
-
     elements.input.addEventListener('input', () => {
       watchedState.form.processState = 'filling';
-      watchedState.form.message = '';
       watchedState.form.valid = true;
-      watchedState.form.validationError = '';
-      watchedState.form.processError = '';
+      Object.keys(watchedState.form.additionalInfo).forEach((key) => {
+        watchedState.form.additionalInfo[key] = '';
+      });
     });
 
     elements.form.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(elements.form);
-      const url = formData.get('url');
-      const isValid = isUrlValid(url);
-      if (isValid) {
-        getRSSData(url);
+      const newUrl = formData.get('url');
+      const addedUrls = watchedState.data.feeds.map(({ url }) => url);
+      const validationError = validate(newUrl, addedUrls);
+      if (validationError) {
+        watchedState.form.valid = false;
+        watchedState.form.additionalInfo.validationError = validationError;
+        return;
       }
+      watchedState.form.valid = true;
+      watchedState.form.additionalInfo.validationError = '';
+      watchedState.form.processState = 'sending';
+      watchedState.form.additionalInfo.message = i18next.t('waiting');
+      makeRequest(newUrl)
+        .then(({ status, data }) => {
+          if (status !== 200) {
+            watchedState.form.processState = 'failed';
+            watchedState.form.additionalInfo.processError = i18next.t('errors.registration');
+            return;
+          }
+          const channelData = parse(data);
+          if (channelData === null) {
+            watchedState.form.processState = 'failed';
+            watchedState.form.additionalInfo.processError = i18next.t('errors.parsing');
+            return;
+          }
+          watchedState.form.processState = 'finished';
+          watchedState.form.additionalInfo.message = i18next.t('success');
+          const { channel: feed, items: posts } = channelData;
+          feed.url = newUrl;
+          const id = uniqueId();
+          changeStateData({ feeds: [feed], posts }, id);
+        })
+        .catch(({ message }) => {
+          watchedState.form.processState = 'failed';
+          watchedState.form.additionalInfo.processError = message;
+        });
     });
 
+    const updateFeed = (url, id) => makeRequest(url)
+      .then(({ status, data }) => {
+        if (status === 200) {
+          autoUpdateDelay = 5000;
+          const { items: newPosts } = parse(data);
+          const oldPosts = watchedState.data.posts.filter(({ id: postId }) => postId === id);
+          const diff = differenceWith(
+            newPosts,
+            oldPosts,
+            (newPost, oldPost) => newPost.title === oldPost.title,
+          );
+          changeStateData({ posts: diff }, id);
+        } else {
+          autoUpdateDelay *= 2;
+        }
+      })
+      .catch((err) => console.log(err));
+
     setTimeout(function autoUpdate() {
-      watchedState.data.feeds.forEach(({ url, id }) => {
-        makeRequest(url)
-          .then(({ status, data }) => {
-            if (status === 200) {
-              autoUpdateDelay = 5000;
-              const { items: newPosts } = parse(data);
-              const oldPosts = watchedState.data.posts.filter(({ id: postId }) => postId === id);
-              const diff = differenceWith(
-                newPosts,
-                oldPosts,
-                (newPost, oldPost) => newPost.title === oldPost.title,
-              );
-              changeStateData({ posts: diff }, id);
-            } else {
-              autoUpdateDelay *= 2;
-            }
-          })
-          .catch((err) => console.log(err));
-      });
-      setTimeout(autoUpdate, autoUpdateDelay);
+      const requests = watchedState.data.feeds.map(({ url, id }) => updateFeed(url, id));
+      Promise.allSettled(requests)
+        .then(() => setTimeout(autoUpdate, autoUpdateDelay))
+        .catch((e) => console.log(e));
     }, autoUpdateDelay);
-  });
+  }).catch((e) => console.log(e));
 };

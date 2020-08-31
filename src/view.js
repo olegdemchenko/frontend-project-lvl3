@@ -7,7 +7,6 @@ const createElement = (elem, content) => {
 };
 
 export default (elements, state) => {
-  const stateTextFields = Object.keys(state.form).filter((key) => state.form[key] === '');
   const renderFormSubState = (path, value, { feedback, input, button }) => {
     if (path.endsWith('processState')) {
       switch (value) {
@@ -50,7 +49,7 @@ export default (elements, state) => {
       input.classList.add('is-invalid');
       feedback.className = 'feedback text-danger';
     }
-    if (stateTextFields.some((field) => path.endsWith(field))) {
+    if (path.includes('additionalInfo')) {
       feedback.textContent = value;
     }
   };

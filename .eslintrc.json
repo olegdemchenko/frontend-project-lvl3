@@ -13,7 +13,8 @@
         "sourceType": "module"
     },
     "rules": {
-        "no-param-reassign":"off"
+        "no-param-reassign":"off",
+        "no-console": "off"
     },
     "plugins": ["jest"]
 }
