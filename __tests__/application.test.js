@@ -23,14 +23,14 @@ const pathToFixture = (fixtureName) => path.join('__tests__', '__fixtures__', fi
 const readFile = (filename) => fs.readFileSync(pathToFixture(filename)).toString();
 
 const links = {
-  notValid: 'hello world',
+  notValid: 'some text',
   notExisted: 'http://somenotexistedsite.com',
   rss: 'http://lorem-rss.herokuapp.com',
 };
 
 const messages = {
   wait: 'please, wait',
-  responseError: '',
+  responseError: 'Request failed with status code 404',
   validationError: 'this url is not valid',
 };
 

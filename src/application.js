@@ -13,13 +13,13 @@ import parse from './rssParser';
 import getUrlWithCORSFree from './common';
 
 const makeRequest = (url) => axios.get(getUrlWithCORSFree(url));
-const validate = ([schema, ...restSchemas], value) => {
+const validate = (schema, value) => {
   try {
     schema.validateSync(value);
+    return null;
   } catch ({ errors: [error] }) {
     return error;
   }
-  return restSchemas.length === 0 ? null : validate(restSchemas, value);
 };
 
 export default () => {
@@ -32,11 +32,7 @@ export default () => {
       form: {
         processState: 'filling',
         valid: true,
-        additionalInfo: {
-          message: '',
-          processError: '',
-          validationError: '',
-        },
+        error: '',
       },
       data: {
         feeds: [],
@@ -44,7 +40,7 @@ export default () => {
       },
     };
 
-    let autoUpdateDelay = 5000;
+    const autoUpdateDelay = 5000;
 
     const elements = {
       form: document.querySelector('.rss-form'),
@@ -54,94 +50,85 @@ export default () => {
       container: document.querySelector('.feeds'),
     };
 
-    const watchedState = initView(elements, state);
+    const messages = {
+      success: i18next.t('success'),
+      waiting: i18next.t('waiting'),
+      validationError: i18next.t('errors.validation'),
+    };
 
-    const addId = (collection, id) => collection.map((elem) => ({ ...elem, id }));
-    const getAddedUrls = () => watchedState.data.feeds.map(({ url }) => url);
+    const watchedState = initView(elements, state, messages);
+    const addId = (data, id) => mapValues(data, (value) => value.map((elem) => ({ ...elem, id })));
 
-    const changeStateData = (newData, id) => {
-      const newDataWithId = mapValues(newData, (value) => addId(value, id));
+    const getNewStateData = (newData) => {
       const newStateData = transform(watchedState.data, (acc, value, key) => {
-        if (newDataWithId[key]) {
-          acc[key] = [...newDataWithId[key], ...value];
+        if (newData[key]) {
+          acc[key] = [...newData[key], ...value];
         } else {
           acc[key] = [...value];
         }
         return acc;
       }, {});
-      watchedState.data = newStateData;
+      return newStateData;
     };
+
+    const autoUpdate = ({ url, id, delay }) => makeRequest(url)
+      .then(({ data }) => {
+        delay = autoUpdateDelay;
+        const { items: newPosts } = parse(data);
+        const oldPosts = watchedState.data.posts.filter(({ id: postId }) => postId === id);
+        const diff = differenceWith(
+          newPosts,
+          oldPosts,
+          (newPost, oldPost) => newPost.title === oldPost.title,
+        );
+        const postsWithId = addId({ posts: diff }, id);
+        const newStateData = getNewStateData(postsWithId);
+        watchedState.data = newStateData;
+      })
+      .catch(() => { delay *= 2; })
+      .finally(() => setTimeout(() => autoUpdate({ url, id, delay }), delay));
 
     elements.input.addEventListener('input', () => {
       watchedState.form.processState = 'filling';
       watchedState.form.valid = true;
-      Object.keys(watchedState.form.additionalInfo).forEach((key) => {
-        watchedState.form.additionalInfo[key] = '';
-      });
+      watchedState.form.error = '';
     });
 
     elements.form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const validationSchemas = [
-        yup.string().url(i18next.t('errors.validation')),
-        yup.mixed().notOneOf(getAddedUrls(), i18next.t('errors.foundSame')),
-      ];
+      const addedFeeds = watchedState.data.feeds.map(({ url }) => url);
+      const validationSchema = yup.string().url().required().notOneOf(addedFeeds);
       const formData = new FormData(elements.form);
       const newUrl = formData.get('url');
-      const validationError = validate(validationSchemas, newUrl);
+      const validationError = validate(validationSchema, newUrl);
       if (validationError) {
         watchedState.form.valid = false;
-        watchedState.form.additionalInfo.validationError = validationError;
         return;
       }
       watchedState.form.valid = true;
-      watchedState.form.additionalInfo.validationError = '';
       watchedState.form.processState = 'sending';
-      watchedState.form.additionalInfo.message = i18next.t('waiting');
       makeRequest(newUrl)
         .then(({ data }) => {
           const channelData = parse(data);
           if (channelData === null) {
             watchedState.form.processState = 'failed';
-            watchedState.form.additionalInfo.processError = i18next.t('errors.parsing');
+            watchedState.form.error = i18next.t('errors.parsing');
             return;
           }
           watchedState.form.processState = 'finished';
-          watchedState.form.additionalInfo.message = i18next.t('success');
           const { channel: feed, items: posts } = channelData;
           feed.url = newUrl;
+          feed.delay = autoUpdateDelay;
           const id = uniqueId();
-          changeStateData({ feeds: [feed], posts }, id);
+          const dataWithId = addId({ feeds: [feed], posts }, id);
+          const newStateData = getNewStateData(dataWithId);
+          watchedState.data = newStateData;
+          setTimeout(() => autoUpdate(dataWithId.feeds[0]), autoUpdateDelay);
         })
-        .catch(({ response: { statusText } }) => {
+        .catch(({ message }) => {
           watchedState.form.processState = 'failed';
-          watchedState.form.additionalInfo.processError = statusText;
+          watchedState.form.error = message;
         });
     });
-
-    const updateFeed = (url, id) => makeRequest(url)
-      .then(({ status, data }) => {
-        if (status === 200) {
-          autoUpdateDelay = 5000;
-          const { items: newPosts } = parse(data);
-          const oldPosts = watchedState.data.posts.filter(({ id: postId }) => postId === id);
-          const diff = differenceWith(
-            newPosts,
-            oldPosts,
-            (newPost, oldPost) => newPost.title === oldPost.title,
-          );
-          changeStateData({ posts: diff }, id);
-        } else {
-          autoUpdateDelay *= 2;
-        }
-      })
-      .catch((err) => console.log(err));
-
-    setTimeout(function autoUpdate() {
-      const requests = watchedState.data.feeds.map(({ url, id }) => updateFeed(url, id));
-      Promise.allSettled(requests)
-        .then(() => setTimeout(autoUpdate, autoUpdateDelay))
-        .catch((e) => console.log(e));
-    }, autoUpdateDelay);
   }).catch((e) => console.log(e));
 };
