@@ -6,22 +6,18 @@ const createElement = (elem, content) => {
   return element;
 };
 
-const showMessage = (message, elem) => {
-  elem.textContent = message;
-};
-
-const renderValidation = (value, elements, messages) => {
+const renderValidation = (valid, elements, messages) => {
   const { input, feedback } = elements;
   const { validationError } = messages;
-  if (value === true) {
+  if (valid === true) {
     input.classList.remove('is-invalid');
-    feedback.className = 'feedback';
-    showMessage('', feedback);
+    feedback.classList.remove('text-danger');
+    feedback.textContent = '';
     return;
   }
   input.classList.add('is-invalid');
   feedback.className = 'feedback text-danger';
-  showMessage(validationError, feedback);
+  feedback.textContent = validationError;
 };
 
 const renderProcessState = (value, elements, messages) => {
@@ -32,28 +28,31 @@ const renderProcessState = (value, elements, messages) => {
       input.removeAttribute('disabled');
       input.value = '';
       button.removeAttribute('disabled');
-      showMessage('', feedback);
+      feedback.classList.remove('text-danger', 'text-success');
+      feedback.textContent = '';
       break;
     }
     case 'sending': {
       input.setAttribute('disabled', '');
       button.setAttribute('disabled', '');
-      feedback.className = 'feedback text-info';
-      showMessage(waiting, feedback);
+      feedback.classList.add('text-info');
+      feedback.textContent = waiting;
       break;
     }
     case 'finished': {
       input.removeAttribute('disabled');
       input.value = '';
       button.removeAttribute('disabled');
-      feedback.className = 'feedback text-success';
-      showMessage(success, feedback);
+      feedback.classList.remove('text-info');
+      feedback.classList.add('text-success');
+      feedback.textContent = success;
       break;
     }
     case 'failed': {
       input.removeAttribute('disabled');
       button.removeAttribute('disabled');
-      feedback.className = 'feedback text-danger';
+      feedback.classList.remove('text-info');
+      feedback.classList.add('text-danger');
       break;
     }
     default: {
@@ -63,6 +62,7 @@ const renderProcessState = (value, elements, messages) => {
 };
 
 const renderFormSubState = (path, value, elements, messages) => {
+  const { feedback } = elements;
   switch (true) {
     case path.endsWith('processState'): {
       renderProcessState(value, elements, messages);
@@ -73,7 +73,7 @@ const renderFormSubState = (path, value, elements, messages) => {
       break;
     }
     case path.endsWith('error'): {
-      showMessage(value, elements.feedback);
+      feedback.textContent = value;
       break;
     }
     default:
@@ -82,6 +82,7 @@ const renderFormSubState = (path, value, elements, messages) => {
 };
 
 const renderDataSubState = (value, { container }) => {
+  // eslint-disable-next-line no-param-reassign
   container.innerHTML = '';
   const { feeds, posts } = value;
   const feedsItems = feeds.map(({ title, link }) => {

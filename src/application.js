@@ -32,7 +32,7 @@ export default () => {
       form: {
         processState: 'filling',
         valid: true,
-        error: '',
+        error: null,
       },
       data: {
         feeds: [],
@@ -73,6 +73,7 @@ export default () => {
 
     const autoUpdate = ({ url, id, delay }) => makeRequest(url)
       .then(({ data }) => {
+        // eslint-disable-next-line no-param-reassign
         delay = autoUpdateDelay;
         const { items: newPosts } = parse(data);
         const oldPosts = watchedState.data.posts.filter(({ id: postId }) => postId === id);
@@ -85,13 +86,16 @@ export default () => {
         const newStateData = getNewStateData(postsWithId);
         watchedState.data = newStateData;
       })
-      .catch(() => { delay *= 2; })
+      .catch(() => {
+        // eslint-disable-next-line no-param-reassign
+        delay *= 2;
+      })
       .finally(() => setTimeout(() => autoUpdate({ url, id, delay }), delay));
 
     elements.input.addEventListener('input', () => {
       watchedState.form.processState = 'filling';
       watchedState.form.valid = true;
-      watchedState.form.error = '';
+      watchedState.form.error = null;
     });
 
     elements.form.addEventListener('submit', (e) => {
