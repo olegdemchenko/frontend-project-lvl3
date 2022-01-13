@@ -22,6 +22,8 @@ jobs:
       run: make lint
       env:
         CI: true
+    - name: build
+    - run: make build
     - run: make test
     - name: test & publish test coverage
       uses: paambaati/codeclimate-action@v2.4.0
